@@ -1,64 +1,80 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const bodyParser = require('body-parser');
-const pool = require('./config/db');
+const bcrypt = require('bcrypt');
+const { Pool } = require('pg');
+const cors = require('cors');
 
 const app = express();
-const port = 3000;
+const pool = new Pool({
+    host: 'localhost',
+    port: 5432,
+    database: 'clusture_db',
+    user: 'clusture_user',
+    password: 'yourpassword'
+});
 
-app.use(bodyParser.json());
-app.use(express.static('public')); // Serve static files (e.g., your HTML, JS, CSS)
+app.use(cors());
+app.use(express.json());
 
-app.post('/signup', async (req, res) => {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
+// Test database connection
+app.get('/test-db', async (req, res) => {
     try {
-        const result = await pool.query(
-            'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING userid',
-            [username, hashedPassword]
-        );
-        console.log('User created:', result.rows[0]); // Debugging log
-        res.status(201).json({ message: 'User created', userId: result.rows[0].userid });
+        const result = await pool.query('SELECT NOW()');
+        res.status(200).json({ message: 'Database connected', time: result.rows[0] });
     } catch (err) {
-        console.error('Error creating user:', err); // Debugging log
-        res.status(500).json({ message: 'Error creating user' });
+        console.error('Error connecting to the database:', err);
+        res.status(500).json({ message: 'Database connection error', error: err.message });
     }
 });
 
+// Handle user sign-up
+app.post('/signup', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        // Check if user already exists
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        if (result.rows.length > 0) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
+
+        // Hash the password before storing
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Insert new user into the database
+        await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
+
+        res.status(201).json({ message: 'Sign up successful' });
+    } catch (error) {
+        console.error('Error during sign-up', error);
+        res.status(500).json({ message: 'Sign-up failed', error: error.message });
+    }
+});
+
+// Handle user login
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
-    }
-
     try {
+        // Find the user by username
         const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
         if (result.rows.length === 0) {
-            return res.status(401).json({ message: 'Invalid username or password' });
+            return res.status(400).json({ message: 'Invalid username or password' });
         }
 
         const user = result.rows[0];
+        const isPasswordValid = await bcrypt.compare(password, user.password);
 
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (!passwordMatch) {
-            return res.status(401).json({ message: 'Invalid username or password' });
+        if (isPasswordValid) {
+            res.status(200).json({ message: 'Login successful' });
+        } else {
+            res.status(400).json({ message: 'Invalid username or password' });
         }
-
-        res.status(200).json({ message: 'Login successful', userId: user.userid });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Error logging in' });
+    } catch (error) {
+        console.error('Error during login', error);
+        res.status(500).json({ message: 'Login failed', error: error.message });
     }
 });
 
 // Start the server
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+app.listen(3000, () => {
+    console.log('Server is running on http://localhost:3000');
 });

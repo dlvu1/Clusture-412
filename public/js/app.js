@@ -48,6 +48,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Display error message if passwords do not match
             errorMessage.style.display = 'block';
         } else {
+            // Clear error message before making request
+            errorMessage.style.display = 'none';
+
             // Proceed with form submission (send data to server)
             fetch('http://localhost:3000/signup', {
                 method: 'POST',
@@ -63,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     signupForm.reset();
                 })
                 .catch(error => {
-                    alert('Sign up failed');
+                    alert('Sign up failed: ' + error.message);
                 });
         }
     });
@@ -86,8 +89,14 @@ document.addEventListener('DOMContentLoaded', function() {
         })
             .then(response => response.json())
             .then(data => {
-                alert(data.message);
-                loginForm.reset();
+                if (data.message === 'Login successful') {
+                    alert(data.message);
+                    loginForm.reset();
+                    // Redirect to a new page (home, dashboard, etc.) upon successful login
+                    window.location.href = '/home'; // Change as needed
+                } else {
+                    alert('Invalid username or password');
+                }
             })
             .catch(error => {
                 alert('Login failed: ' + error.message);
