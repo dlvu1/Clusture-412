@@ -1,5 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 const cors = require('cors');
 
@@ -11,6 +12,8 @@ const pool = new Pool({
     user: 'clusture_user',
     password: 'yourpassword'
 });
+
+const SECRET_KEY = '8f2d3ae8f0c47f8e4b84d9425a715cdbdddc70ee6d7f647f730f258c6e87f7e5';
 
 app.use(cors());
 app.use(express.json());
@@ -30,16 +33,12 @@ app.get('/test-db', async (req, res) => {
 app.post('/signup', async (req, res) => {
     const { username, password } = req.body;
     try {
-        // Check if user already exists
         const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
         if (result.rows.length > 0) {
             return res.status(400).json({ message: 'Username already exists' });
         }
 
-        // Hash the password before storing
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Insert new user into the database
         await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
 
         res.status(201).json({ message: 'Sign up successful' });
@@ -53,9 +52,7 @@ app.post('/signup', async (req, res) => {
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
-        // Find the user by username
         const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-
         if (result.rows.length === 0) {
             return res.status(400).json({ message: 'Invalid username or password' });
         }
@@ -64,7 +61,8 @@ app.post('/login', async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (isPasswordValid) {
-            res.status(200).json({ message: 'Login successful' });
+            const token = jwt.sign({ username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+            res.status(200).json({ message: 'Login successful', token, username: user.username });
         } else {
             res.status(400).json({ message: 'Invalid username or password' });
         }

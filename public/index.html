@@ -16,24 +16,20 @@
         <form id="search-form" class="search-form">
             <input type="text" id="search-input" placeholder="Search for pins or boards">
         </form>
-        <ul class="right-nav">
+        <ul class="right-nav" id="auth-nav">
             <li><a href="#" id="login-link">Login</a></li>
             <li><a href="#" id="signup-link">Sign Up</a></li>
         </ul>
+        <p id="welcome-message" style="display: none;">
+            Welcome, <span id="username-display"></span>!
+            <button id="logout-button">Logout</button>
+        </p>
     </nav>
 </header>
 <main>
-    <!-- Sections for different views -->
     <section id="home-view">
         <h2>Welcome to Clusture</h2>
         <p>Discover and organize your favorite ideas!</p>
-    </section>
-
-    <section id="search-view" style="display: none;">
-        <h2>Search</h2>
-        <input type="text" id="search-input" placeholder="Search for pins or boards">
-        <button id="search-button">Search</button>
-        <div id="search-results"></div>
     </section>
 
     <section id="login-view" style="display: none;">
