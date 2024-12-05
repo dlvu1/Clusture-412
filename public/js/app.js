@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const signupForm = document.getElementById('signup-form');
     const errorMessage = document.getElementById('error-message');
 
-    // Function to show or hide views
+    // Helper function to show a specific view and hide others
     function showView(viewToShow) {
         homeView.style.display = 'none';
         loginView.style.display = 'none';
@@ -23,19 +23,15 @@ document.addEventListener('DOMContentLoaded', function () {
         viewToShow.style.display = 'block';
     }
 
-    // Event listener for the "Home" link
-    homeLink.addEventListener('click', () => {
-        showView(homeView);
-    });
+    // Default view on page load
+    showView(homeView);
 
-    loginLink.addEventListener('click', () => {
-        showView(loginView);
-    });
+    // Event listener for navigation
+    homeLink.addEventListener('click', () => showView(homeView));
+    loginLink.addEventListener('click', () => showView(loginView));
+    signupLink.addEventListener('click', () => showView(signupView));
 
-    signupLink.addEventListener('click', () => {
-        showView(signupView);
-    });
-
+    // Signup form submission handler
     signupForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
@@ -44,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const confirmPassword = signupForm['signup-confirm-password'].value;
 
         if (password !== confirmPassword) {
+            errorMessage.textContent = 'Passwords do not match!';
             errorMessage.style.display = 'block';
             return;
         }
@@ -56,11 +53,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
+
             const data = await response.json();
             alert(data.message);
 
             if (response.ok) {
-                showView(loginView); // Redirect to login page
+                showView(loginView);
                 signupForm.reset();
             }
         } catch (error) {
@@ -68,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Login form submission handler
     loginForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
@@ -80,16 +79,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
+
             const data = await response.json();
 
             if (response.ok) {
                 alert(data.message);
                 loginForm.reset();
-                // Update the UI to show welcome message
+
+                // Update UI for logged-in user
                 usernameDisplay.textContent = username;
-                authNav.style.display = 'none'; // Hide login and signup links
+                authNav.style.display = 'none';
                 welcomeMessage.style.display = 'block';
-                showView(homeView); // Redirect to home page
+                showView(homeView);
             } else {
                 alert(data.message || 'Invalid username or password');
             }
@@ -98,11 +99,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Logout button handler
     logoutButton.addEventListener('click', () => {
-        // Clear session data (if any logic exists for session handling)
-        authNav.style.display = 'block'; // Show login and signup links
+        authNav.style.display = 'flex'; // Show navigation links
         welcomeMessage.style.display = 'none'; // Hide welcome message
-        usernameDisplay.textContent = '';
-        showView(loginView); // Redirect to login page
+        usernameDisplay.textContent = ''; // Clear username
+        showView(loginView); // Redirect to login view
     });
 });
