@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 const cors = require('cors');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 const app = express();
 const pool = new Pool({
@@ -71,6 +73,42 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Login failed', error: error.message });
     }
 });
+
+// Handle profile updates
+app.post('/profile', upload.single('profilePic'), async (req, res) => {
+    const { description, username } = req.body;  // Extract username and description from the request body
+    const profilePic = req.file ? req.file.filename : null;  // Get the file name of the uploaded image
+
+    // Validate the username is provided
+    if (!username) {
+        return res.status(400).json({ message: 'Username is required' });
+    }
+
+    try {
+        console.log('Updating profile...');
+        const result = await pool.query(
+            'UPDATE users SET profilepic = $1, description = $2 WHERE username = $3 RETURNING profilepic, description',
+            [profilePic, description, username]
+        );
+        console.log('Query result:', result);  // Log the result to verify if the update was successful
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json({
+            message: 'Profile updated successfully',
+            profilepic: result.rows[0].profilepic,
+            description: result.rows[0].description
+        });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ message: 'Failed to update profile', error: error.message });
+    }
+});
+
+// Serve static files for profile pictures
+app.use('/uploads', express.static('uploads'));
 
 // Start the server
 app.listen(3000, () => {

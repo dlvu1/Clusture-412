@@ -44,10 +44,11 @@
             <li><a href="#" id="login-link">Login</a></li>
             <li><a href="#" id="signup-link">Sign Up</a></li>
         </ul>
-        <p id="welcome-message" style="display: none;">
-            Welcome, <span id="username-display"></span>!
+        <button id="profile-button" style="display:none;">Profile</button>
+        <div id="welcome-message" style="display:none;">
+            Welcome, <span id="username-display"></span>
             <button id="logout-button">Logout</button>
-        </p>
+        </div>
     </nav>
 </header>
 <main>
@@ -98,6 +99,17 @@
             <button type="submit">Sign Up</button>
             <p id="error-message" style="color: red; display: none;">Passwords do not match. Please try again.</p>
         </form>
+    </section>
+    <section id="profile-view" style="display:none;">
+        <h2>Update Profile</h2>
+        <form id="profile-form">
+            <label for="profile-pic">Profile Picture</label>
+            <input type="file" id="profile-pic" name="profilePic" accept="image/*">
+            <label for="profile-description">Description</label>
+            <textarea id="profile-description" name="description" rows="4" placeholder="Write something about yourself"></textarea>
+            <button type="submit">Update Profile</button>
+        </form>
+        <div id="profile-display"></div>
     </section>
 </main>
 <footer>
