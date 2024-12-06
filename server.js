@@ -74,10 +74,29 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Authentication Middleware to validate JWT
+function authenticateJWT(req, res, next) {
+    const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];  // Extract token from "Bearer <token>"
+
+    if (!token) {
+        return res.status(403).json({ message: 'Token is required for authentication' });
+    }
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: 'Invalid or expired token' });
+        }
+        req.user = user;  // Add user info to the request object
+        next();
+    });
+}
+
 // Handle profile updates
-app.post('/profile', upload.single('profilePic'), async (req, res) => {
-    const { description, username } = req.body;  // Extract username and description from the request body
+app.post('/profile', authenticateJWT, upload.single('profilePic'), async (req, res) => {
+    const { description } = req.body;  // Extract description from the request body
     const profilePic = req.file ? req.file.filename : null;  // Get the file name of the uploaded image
+
+    const username = req.user.username;  // Get the username from the JWT payload
 
     // Validate the username is provided
     if (!username) {
@@ -85,12 +104,10 @@ app.post('/profile', upload.single('profilePic'), async (req, res) => {
     }
 
     try {
-        console.log('Updating profile...');
         const result = await pool.query(
             'UPDATE users SET profilepic = $1, description = $2 WHERE username = $3 RETURNING profilepic, description',
             [profilePic, description, username]
         );
-        console.log('Query result:', result);  // Log the result to verify if the update was successful
 
         if (result.rowCount === 0) {
             return res.status(404).json({ message: 'User not found' });
@@ -104,6 +121,42 @@ app.post('/profile', upload.single('profilePic'), async (req, res) => {
     } catch (error) {
         console.error('Error updating profile:', error);
         res.status(500).json({ message: 'Failed to update profile', error: error.message });
+    }
+});
+
+// Create Pin route (with authentication)
+app.post('/create-pin', authenticateJWT, upload.single('image'), async (req, res) => {
+    const { tags, description } = req.body;
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+    const username = req.user.username;  // Now, req.user contains the authenticated username
+
+    if (!imagePath || !tags || !description) {
+        return res.status(400).json({ message: 'Image, description, and tags are required.' });
+    }
+
+    try {
+        // Fetch the user ID based on the username
+        const userResult = await pool.query('SELECT userid FROM users WHERE username = $1', [username]);
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const userId = userResult.rows[0].userid;
+
+        // Create the pin (removed title from query)
+        const result = await pool.query(
+            'INSERT INTO pin (userid, tags, imageurl, description) VALUES ($1, $2, $3, $4) RETURNING *',
+            [userId, tags, imagePath, description]
+        );
+
+        res.status(201).json({
+            message: 'Pin created successfully',
+            pin: result.rows[0],
+        });
+    } catch (error) {
+        console.error('Error creating pin:', error);
+        res.status(500).json({ message: 'Failed to create pin', error: error.message });
     }
 });
 
