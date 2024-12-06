@@ -168,3 +168,118 @@ document.addEventListener('DOMContentLoaded', function () {
         showView(homeView);
     }
 });
+
+function showView(viewToShow) {
+    const views = document.querySelectorAll('section');
+    views.forEach((view) => (view.style.display = 'none')); // Hide all views
+    viewToShow.style.display = 'block'; // Show the selected view
+}
+document.getElementById('view-boards-button').addEventListener('click', async () => {
+
+    try {
+        console.log('Fetching boards from API...');
+        const response = await fetch('http://localhost:3000/boards');
+        console.log('Response status:', response.status);
+        const boards = await response.json();
+        console.log('Boards data:', boards);
+
+        const boardsList = document.getElementById('boards-list');
+        boardsList.innerHTML = ''; // Clear any previous data
+
+        boards.forEach((board) => {
+            const boardElement = document.createElement('div');
+            boardElement.innerHTML = `
+                <div style="display: flex; align-items: center;">
+                    <img src="${board.imageurl}" alt="${board.boardname}" style="width: 100px; height: 100px; margin-right: 10px; object-fit: cover;">
+                    <div>
+                        <h3>${board.boardname}</h3>
+                        <p>${board.description}</p>
+                        <p>Created by: ${board.username}</p>
+                    </div>
+                </div>
+                <hr>
+            `;
+            boardsList.appendChild(boardElement);
+        });
+
+        showView(document.getElementById('boards-view'));
+    } catch (error) {
+        console.error('Error fetching boards:', error);
+        alert('Failed to fetch boards');
+    }
+});
+
+document.getElementById('add-board-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const boardname = document.getElementById('board-name').value;
+    const description = document.getElementById('board-description').value;
+    const imageurl = document.getElementById('board-image-url').value || '/images/default.jpg';
+    const userid = 1; // Replace this with the actual logged-in user's ID
+
+    try {
+        const response = await fetch('http://localhost:3000/boards', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ boardname, description, userid, imageurl }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message);
+            document.getElementById('add-board-form').reset();
+            showView(document.getElementById('home-view'));
+        } else {
+            alert(data.message || 'Failed to add boaard');
+        }
+    } catch (error) {
+        console.error('Error adding board:', error);
+        alert('Failed to add board');
+    }
+});
+/*
+boards.forEach((board) => {
+    const boardElement = document.createElement('div');
+    boardElement.innerHTML = `
+        <div style="display: flex; align-items: center;">
+            <img src="${board.imageurl}" alt="${board.boardname}" style="width: 100px; height: 100px; margin-right: 10px; object-fit: cover;">
+            <div>
+                <h3>${board.boardname}</h3>
+                <p>${board.description}</p>
+                <p>Created by: ${board.username}</p>
+                <button class="delete-board-button" data-id="${board.boardid}">Delete</button>
+            </div>
+        </div>
+        <hr>
+    `;
+    boardsList.appendChild(boardElement);
+});
+
+// Handle delete button clicks
+document.querySelectorAll('.delete-board-button').forEach((button) => {
+    button.addEventListener('click', async (event) => {
+        const boardId = event.target.getAttribute('data-id');
+        try {
+            const response = await fetch(`http://localhost:3000/boards/${boardId}`, { method: 'DELETE' });
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                event.target.closest('div').remove(); // Remove the board from the list
+            } else {
+                alert(data.message || 'Failed to delete board');
+            }
+        } catch (error) {
+            console.error('Error deleting board:', error);
+            alert('Failed to delete board');
+        }
+    });
+});
+*/
+document.getElementById('back-to-home-from-add').addEventListener('click', () => {
+    showView(document.getElementById('home-view'));
+});
+
+document.getElementById('add-board-button').addEventListener('click', () => {
+    showView(document.getElementById('add-board-view'));
+});

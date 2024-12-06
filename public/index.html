@@ -44,6 +44,8 @@
             <li><a href="#" id="login-link">Login</a></li>
             <li><a href="#" id="signup-link">Sign Up</a></li>
         </ul>
+        <button id="view-boards-button">View Boards</button>
+        <button id="add-board-button">Add Board</button>
         <button id="profile-button" style="display:none;">Profile</button>
         <div id="welcome-message" style="display:none;">
             Welcome, <span id="username-display"></span>
@@ -111,6 +113,25 @@
         </form>
         <div id="profile-display"></div>
     </section>
+    <section id="boards-view" style="display: none;">
+        <h2>All Boards</h2>
+        <div id="boards-list"></div>
+        <button id="back-to-home">Back to Home</button>
+    </section>
+    <section id="add-board-view" style="display: none;">
+        <h2>Add a New Board</h2>
+        <form id="add-board-form">
+            <label for="board-name">Board Name:</label>
+            <input type="text" id="board-name" required>
+            <label for="board-description">Description:</label>
+            <textarea id="board-description" rows="4" required></textarea>
+            <label for="board-image-url">Image URL (Optional):</label>
+            <input type="text" id="board-image-url" placeholder="/images/default.jpg">
+            <button type="submit">Add Board</button>
+        </form>
+        <button id="back-to-home-from-add">Back to Home</button>
+    </section>
+
 </main>
 <footer>
     <p>&copy; 2024 Clusture</p>
