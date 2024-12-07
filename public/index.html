@@ -36,7 +36,6 @@
     <nav>
         <ul class="left-nav">
             <li><a href="#" id="home-link">Home</a></li>
-            <li><a href="#" id="create-pin-link" style="display:none;">Create Pin</a></li>
         </ul>
         <form id="search-form" class="search-form">
             <input type="text" id="search-input" placeholder="Search for pins or boards">
@@ -45,6 +44,8 @@
             <li><a href="#" id="login-link">Login</a></li>
             <li><a href="#" id="signup-link">Sign Up</a></li>
         </ul>
+        <button id="view-boards-button">View Boards</button>
+        <button id="add-board-button">Add Board</button>
         <button id="profile-button" style="display:none;">Profile</button>
         <div id="welcome-message" style="display:none;">
             Welcome, <span id="username-display"></span>
@@ -75,10 +76,6 @@
             <img src="images/image14.jpg" alt="Image 14" />
             <img src="images/image15.jpg" alt="Image 15" />
         </div>
-        <div id="pins-container">
-            <!-- Pins will be dynamically inserted here -->
-        </div>
-
     </section>
 
     <section id="login-view" style="display: none;">
@@ -116,22 +113,25 @@
         </form>
         <div id="profile-display"></div>
     </section>
-    <section id="create-pin-view" style="display: none;">
-        <h2>Create a New Pin</h2>
-        <form id="create-pin-form">
-            <!-- Removed the title field -->
-            <label for="pin-image">Upload Image:</label>
-            <input type="file" id="pin-image" accept="image/*" required />
-
-            <label for="pin-tags">Tags (comma-separated):</label>
-            <input type="text" id="pin-tags" />
-
-            <label for="pin-description">Description:</label>
-            <textarea id="pin-description"></textarea>
-
-            <button type="submit">Create Pin</button>
-        </form>
+    <section id="boards-view" style="display: none;">
+        <h2>All Boards</h2>
+        <div id="boards-list"></div>
+        <button id="back-to-home">Back to Home</button>
     </section>
+    <section id="add-board-view" style="display: none;">
+        <h2>Add a New Board</h2>
+        <form id="add-board-form">
+            <label for="board-name">Board Name:</label>
+            <input type="text" id="board-name" required>
+            <label for="board-description">Description:</label>
+            <textarea id="board-description" rows="4" required></textarea>
+            <label for="board-image-url">Image URL (Optional):</label>
+            <input type="text" id="board-image-url" placeholder="/images/default.jpg">
+            <button type="submit">Add Board</button>
+        </form>
+        <button id="back-to-home-from-add">Back to Home</button>
+    </section>
+
 </main>
 <footer>
     <p>&copy; 2024 Clusture</p>
