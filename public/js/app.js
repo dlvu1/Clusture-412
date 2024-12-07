@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const createPinLink = document.getElementById('create-pin-link');
     const createPinForm = document.getElementById('create-pin-form');
 
+    const searchBox = document.getElementById('search-box');
+    const pinsContainer = document.getElementById('pins-container');
+
     // Helper function to show a specific view and hide others
     function showView(viewToShow) {
         homeView.style.display = 'none';
@@ -53,6 +56,29 @@ document.addEventListener('DOMContentLoaded', function () {
     loginLink.addEventListener('click', () => showView(loginView));
     signupLink.addEventListener('click', () => showView(signupView));
 
+    // Function to perform a search
+    function performSearch(query) {
+        const allPins = document.querySelectorAll('.pin');
+
+        allPins.forEach(pin => {
+            const tags = pin.getAttribute('data-tags').toLowerCase();
+            const description = pin.querySelector('.pin-description').textContent.toLowerCase();
+
+            // If the search query matches any of the tags or description, show the pin
+            if (tags.includes(query.toLowerCase()) || description.includes(query.toLowerCase())) {
+                pin.style.display = 'block';
+            } else {
+                pin.style.display = 'none';
+            }
+        });
+    }
+
+    // Event listener for search box input
+    searchBox.addEventListener('input', (event) => {
+        const query = event.target.value; // Get the search query
+        performSearch(query); // Call the search function
+    });
+    
     // Handle Create Pin form submission
     createPinForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -66,32 +92,29 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('image', fileInput.files[0]);
-        formData.append('tags', tags.join(',')); // Pass as a comma-separated string
-        formData.append('description', description);
+        const file = fileInput.files[0];
+        const imageUrl = URL.createObjectURL(file); // Create a local URL for the uploaded image
 
-        const token = localStorage.getItem('authToken');
+        // Create a new pin element
+        const pinElement = document.createElement('div');
+        pinElement.className = 'pin';
+        pinElement.setAttribute('data-tags', tags.join(',')); // Store the tags in a data attribute
 
-        try {
-            const response = await fetch('http://localhost:3000/create-pin', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData,
-            });
+        pinElement.innerHTML = `
+        <img src="${imageUrl}" alt="Uploaded Pin Image" class="pin-image">
+        <p class="pin-description">${description}</p>
+        <p class="pin-tags">${tags.map(tag => `#${tag}`).join(' ')}</p>
+    `;
 
-            const data = await response.json();
-            alert(data.message);
+        // Append the pin element to the pins container
+        const pinsContainer = document.getElementById('pins-container'); // Ensure you have a container to hold the pins
+        pinsContainer.appendChild(pinElement);
 
-            if (response.ok) {
-                alert('Pin created successfully! Returning to Home.');
-                showView(homeView);
-            }
-        } catch (error) {
-            alert('Failed to create pin: ' + error.message);
-        }
+        alert('Pin created successfully! Returning to Home.');
+        showView(homeView);
+
+        // Reset the form
+        createPinForm.reset();
     });
 
     // Signup form submission handler

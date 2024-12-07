@@ -39,7 +39,7 @@
             <li><a href="#" id="create-pin-link" style="display:none;">Create Pin</a></li>
         </ul>
         <form id="search-form" class="search-form">
-            <input type="text" id="search-input" placeholder="Search for pins or boards">
+            <input type="text" id="search-box" placeholder="Search Pins...">
         </form>
         <ul class="right-nav" id="auth-nav">
             <li><a href="#" id="login-link">Login</a></li>
@@ -56,6 +56,10 @@
     <section id="home-view">
         <h2>Welcome to Clusture</h2>
         <p>Discover and organize your favorite ideas!</p>
+
+        <div id="pins-container" class="pins-container">
+            <!-- Pins will be dynamically added here -->
+        </div>
 
         <!-- Image Gallery -->
         <div class="image-gallery">
@@ -75,10 +79,6 @@
             <img src="images/image14.jpg" alt="Image 14" />
             <img src="images/image15.jpg" alt="Image 15" />
         </div>
-        <div id="pins-container">
-            <!-- Pins will be dynamically inserted here -->
-        </div>
-
     </section>
 
     <section id="login-view" style="display: none;">

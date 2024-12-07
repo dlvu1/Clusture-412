@@ -5,6 +5,32 @@ body {
     box-sizing: border-box;
 }
 
+/* Container for pins - flexbox layout to display pins side by side */
+#pins-container {
+    display: flex;
+    flex-wrap: wrap;  /* Allow wrapping of elements */
+    gap: 10px;  /* Space between images */
+    justify-content: flex-start;  /* Align items to the start */
+}
+
+/* Pin image styling */
+.pin-image {
+    width: 100%;  /* Scale image to fill the container */
+    max-width: 300px;  /* Limit the maximum size */
+    height: auto;  /* Maintain aspect ratio */
+    object-fit: cover;  /* Ensure image covers the area without stretching */
+}
+
+/* Optional: Style for the pin elements (cards) */
+.pin {
+    width: 300px;  /* Set a fixed width for each pin */
+    border: 1px solid #ccc;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
 nav ul.left-nav li a#create-pin-link {
     margin-left: 15px; /* Add spacing between Home and Create Pin */
     text-decoration: none;
@@ -108,7 +134,7 @@ nav {
     transform: translateX(-40%);  /* Center it horizontally */
 }
 
-#search-input {
+#search-box {
     width: 500px; /* Adjust the size of the search box */
     padding: 8px;
     font-size: 1rem;
