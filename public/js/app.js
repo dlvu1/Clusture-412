@@ -244,18 +244,20 @@ document.getElementById('view-boards-button').addEventListener('click', async ()
         boards.forEach((board) => {
             const boardElement = document.createElement('div');
             boardElement.innerHTML = `
-                <div style="display: flex; align-items: center;">
-                    <img src="${board.imageurl}" alt="${board.boardname}" style="width: 100px; height: 100px; margin-right: 10px; object-fit: cover;">
-                    <div>
-                        <h3>${board.boardname}</h3>
-                        <p>${board.description}</p>
-                        <p>Created by: ${board.username}</p>
-                    </div>
-                </div>
-                <hr>
-            `;
+            <div style="display: flex; align-items: center;">
+            <img src="${board.imageurl}" alt="${board.boardname}" style="width: 100px; height: 100px; margin-right: 10px; object-fit: cover;">
+            <div>
+                <h3>${board.boardname}</h3>
+                <p>${board.description}</p>
+                <p>Created by: ${board.username}</p>
+                <button class="delete-board-button" data-id="${board.boardid}">Delete</button>
+            </div>
+            </div>
+        <hr>
+    `;
             boardsList.appendChild(boardElement);
         });
+
 
         showView(document.getElementById('boards-view'));
     } catch (error) {
@@ -331,6 +333,34 @@ document.querySelectorAll('.delete-board-button').forEach((button) => {
     });
 });
 */
+
+document.addEventListener('click', async (event) => {
+    if (event.target.classList.contains('delete-board-button')) {
+        const boardId = event.target.getAttribute('data-id');
+
+        const confirmDelete = confirm('Are you sure you want to delete this board?');
+        if (!confirmDelete) return;
+
+        try {
+            const response = await fetch(`http://localhost:3000/boards/${boardId}`, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                event.target.closest('div').remove(); // Remove the board from the list
+            } else {
+                alert(data.message || 'Failed to deleteee board');
+            }
+        } catch (error) {
+            console.error('Error deleting board:', error);
+            alert('Failed to deleteeeee board');
+        }
+    }
+});
+
 document.getElementById('back-to-home-from-add').addEventListener('click', () => {
     showView(document.getElementById('home-view'));
 });
