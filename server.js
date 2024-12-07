@@ -128,14 +128,13 @@ app.post('/profile', authenticateJWT, upload.single('profilePic'), async (req, r
 app.post('/create-pin', authenticateJWT, upload.single('image'), async (req, res) => {
     const { tags, description } = req.body;
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
-    const username = req.user.username;  // Now, req.user contains the authenticated username
+    const username = req.user.username;
 
     if (!imagePath || !tags || !description) {
         return res.status(400).json({ message: 'Image, description, and tags are required.' });
     }
 
     try {
-        // Fetch the user ID based on the username
         const userResult = await pool.query('SELECT userid FROM users WHERE username = $1', [username]);
 
         if (userResult.rows.length === 0) {
@@ -144,10 +143,12 @@ app.post('/create-pin', authenticateJWT, upload.single('image'), async (req, res
 
         const userId = userResult.rows[0].userid;
 
-        // Create the pin (removed title from query)
+        // Convert the tags string into an array
+        const tagsArray = `{${tags.split(',').map(tag => tag.trim()).join(',')}}`;
+
         const result = await pool.query(
-            'INSERT INTO pin (userid, tags, imageurl, description) VALUES ($1, $2, $3, $4) RETURNING *',
-            [userId, tags, imagePath, description]
+            'INSERT INTO pin (userid, tags, imageurl, description) VALUES ($1, $2::text[], $3, $4) RETURNING *',
+            [userId, tagsArray, imagePath, description]
         );
 
         res.status(201).json({

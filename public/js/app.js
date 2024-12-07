@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
     createPinForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Removed title
         const fileInput = document.getElementById('pin-image');
         const tags = document.getElementById('pin-tags').value.split(',').map(tag => tag.trim());
         const description = document.getElementById('pin-description').value;
@@ -69,16 +68,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const formData = new FormData();
         formData.append('image', fileInput.files[0]);
-        formData.append('tags', tags);
-        formData.append('description', description); // Include the description
+        formData.append('tags', tags.join(',')); // Pass as a comma-separated string
+        formData.append('description', description);
 
-        const token = localStorage.getItem('authToken'); // Get the token from localStorage
+        const token = localStorage.getItem('authToken');
 
         try {
             const response = await fetch('http://localhost:3000/create-pin', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}` // Pass the token in the Authorization header
+                    'Authorization': `Bearer ${token}`
                 },
                 body: formData,
             });
