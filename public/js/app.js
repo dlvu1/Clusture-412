@@ -20,25 +20,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const signupForm = document.getElementById('signup-form');
     const errorMessage = document.getElementById('error-message');
 
-    const createPinView = document.getElementById('create-pin-view');
-    const createPinLink = document.getElementById('create-pin-link');
-    const createPinForm = document.getElementById('create-pin-form');
-
     // Helper function to show a specific view and hide others
     function showView(viewToShow) {
         homeView.style.display = 'none';
         loginView.style.display = 'none';
         signupView.style.display = 'none';
         profileView.style.display = 'none'; // Hide profile view
-        createPinView.style.display = 'none'; // Hide Create Pin view
         viewToShow.style.display = 'block';
     }
-
-    // Show Create Pin page
-    createPinLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        showView(createPinView);
-    });
 
     // Display profile view
     profileButton.addEventListener('click', () => {
@@ -52,48 +41,6 @@ document.addEventListener('DOMContentLoaded', function () {
     homeLink.addEventListener('click', () => showView(homeView));
     loginLink.addEventListener('click', () => showView(loginView));
     signupLink.addEventListener('click', () => showView(signupView));
-
-    // Handle Create Pin form submission
-    createPinForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        // Removed title
-        const fileInput = document.getElementById('pin-image');
-        const tags = document.getElementById('pin-tags').value.split(',').map(tag => tag.trim());
-        const description = document.getElementById('pin-description').value;
-
-        if (fileInput.files.length === 0) {
-            alert('Please upload an image.');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('image', fileInput.files[0]);
-        formData.append('tags', tags);
-        formData.append('description', description); // Include the description
-
-        const token = localStorage.getItem('authToken'); // Get the token from localStorage
-
-        try {
-            const response = await fetch('http://localhost:3000/create-pin', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}` // Pass the token in the Authorization header
-                },
-                body: formData,
-            });
-
-            const data = await response.json();
-            alert(data.message);
-
-            if (response.ok) {
-                alert('Pin created successfully! Returning to Home.');
-                showView(homeView);
-            }
-        } catch (error) {
-            alert('Failed to create pin: ' + error.message);
-        }
-    });
 
     // Signup form submission handler
     signupForm.addEventListener('submit', async (event) => {
@@ -147,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await response.json();
 
             if (response.ok) {
-                localStorage.setItem('authToken', data.token); // Store the token in localStorage
                 alert(data.message);
                 loginForm.reset();
                 handleLoginSuccess(username);
@@ -174,14 +120,9 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('description', description);
         formData.append('username', usernameDisplay.textContent);
 
-        const token = localStorage.getItem('authToken'); // Get the token from localStorage
-
         try {
             const response = await fetch('http://localhost:3000/profile', {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}` // Pass the token in the Authorization header
-                },
                 body: formData,  // Send form data (not JSON)
             });
 
@@ -196,22 +137,14 @@ document.addEventListener('DOMContentLoaded', function () {
                      <img src="${URL.createObjectURL(fileInput.files[0])}" alt="Profile Picture" class="profile-picture">
                     <h3>${usernameDisplay.textContent}</h3>
                     <p>${description}</p>
-                </div>`;
+                </div>
+            `;
+                showView(profileView);
             }
         } catch (error) {
-            alert('Failed to update profile: ' + error.message);
+            alert('Profile update failed: ' + error.message);
         }
     });
-
-// Handle login success
-    function handleLoginSuccess(username) {
-        usernameDisplay.textContent = username;
-        authNav.style.display = 'none'; // Hide login and signup links
-        welcomeMessage.style.display = 'block'; // Show welcome message
-        profileButton.style.display = 'block'; // Show profile button
-        createPinLink.style.display = 'block'; // Show Create Pin link
-        showView(homeView);
-    }
 
     // Handle logout
     logoutButton.addEventListener('click', () => {
@@ -219,7 +152,134 @@ document.addEventListener('DOMContentLoaded', function () {
         welcomeMessage.style.display = 'none'; // Hide welcome message
         usernameDisplay.textContent = ''; // Clear username
         profileButton.style.display = 'none'; // Hide profile button
-        createPinLink.style.display = 'none'; // Hide Create Pin link
+        const profileDisplay = document.getElementById('profile-display');
+        if (profileDisplay) {
+            profileDisplay.innerHTML = ''; // Clear the profile display
+        }
         showView(homeView); // Redirect to home page
     });
+
+    // Update UI on successful login
+    function handleLoginSuccess(username) {
+        usernameDisplay.textContent = username;
+        authNav.style.display = 'none';
+        welcomeMessage.style.display = 'block';
+        profileButton.style.display = 'block'; // Show profile button
+        showView(homeView);
+    }
+});
+
+function showView(viewToShow) {
+    const views = document.querySelectorAll('section');
+    views.forEach((view) => (view.style.display = 'none')); // Hide all views
+    viewToShow.style.display = 'block'; // Show the selected view
+}
+document.getElementById('view-boards-button').addEventListener('click', async () => {
+
+    try {
+        console.log('Fetching boards from API...');
+        const response = await fetch('http://localhost:3000/boards');
+        console.log('Response status:', response.status);
+        const boards = await response.json();
+        console.log('Boards data:', boards);
+
+        const boardsList = document.getElementById('boards-list');
+        boardsList.innerHTML = ''; // Clear any previous data
+
+        boards.forEach((board) => {
+            const boardElement = document.createElement('div');
+            boardElement.innerHTML = `
+                <div style="display: flex; align-items: center;">
+                    <img src="${board.imageurl}" alt="${board.boardname}" style="width: 100px; height: 100px; margin-right: 10px; object-fit: cover;">
+                    <div>
+                        <h3>${board.boardname}</h3>
+                        <p>${board.description}</p>
+                        <p>Created by: ${board.username}</p>
+                    </div>
+                </div>
+                <hr>
+            `;
+            boardsList.appendChild(boardElement);
+        });
+
+        showView(document.getElementById('boards-view'));
+    } catch (error) {
+        console.error('Error fetching boards:', error);
+        alert('Failed to fetch boards');
+    }
+});
+
+document.getElementById('add-board-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const boardname = document.getElementById('board-name').value;
+    const description = document.getElementById('board-description').value;
+    const imageurl = document.getElementById('board-image-url').value || '/images/default.jpg';
+    const userid = 1; // Replace this with the actual logged-in user's ID
+
+    try {
+        const response = await fetch('http://localhost:3000/boards', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ boardname, description, userid, imageurl }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message);
+            document.getElementById('add-board-form').reset();
+            showView(document.getElementById('home-view'));
+        } else {
+            alert(data.message || 'Failed to add boaard');
+        }
+    } catch (error) {
+        console.error('Error adding board:', error);
+        alert('Failed to add board');
+    }
+});
+/*
+boards.forEach((board) => {
+    const boardElement = document.createElement('div');
+    boardElement.innerHTML = `
+        <div style="display: flex; align-items: center;">
+            <img src="${board.imageurl}" alt="${board.boardname}" style="width: 100px; height: 100px; margin-right: 10px; object-fit: cover;">
+            <div>
+                <h3>${board.boardname}</h3>
+                <p>${board.description}</p>
+                <p>Created by: ${board.username}</p>
+                <button class="delete-board-button" data-id="${board.boardid}">Delete</button>
+            </div>
+        </div>
+        <hr>
+    `;
+    boardsList.appendChild(boardElement);
+});
+
+// Handle delete button clicks
+document.querySelectorAll('.delete-board-button').forEach((button) => {
+    button.addEventListener('click', async (event) => {
+        const boardId = event.target.getAttribute('data-id');
+        try {
+            const response = await fetch(`http://localhost:3000/boards/${boardId}`, { method: 'DELETE' });
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                event.target.closest('div').remove(); // Remove the board from the list
+            } else {
+                alert(data.message || 'Failed to delete board');
+            }
+        } catch (error) {
+            console.error('Error deleting board:', error);
+            alert('Failed to delete board');
+        }
+    });
+});
+*/
+document.getElementById('back-to-home-from-add').addEventListener('click', () => {
+    showView(document.getElementById('home-view'));
+});
+
+document.getElementById('add-board-button').addEventListener('click', () => {
+    showView(document.getElementById('add-board-view'));
 });
