@@ -5,6 +5,18 @@ body {
     box-sizing: border-box;
 }
 
+nav ul.left-nav li a#create-pin-link {
+    margin-left: 15px; /* Add spacing between Home and Create Pin */
+    text-decoration: none;
+    color: white; /* Match the color of the other buttons */
+    font-size: 1rem; /* Match the font size of other buttons */
+    transition: color 0.3s; /* Optional smooth hover effect */
+}
+
+nav ul.left-nav li a#create-pin-link:hover {
+    color: #bdbdbd; /* Match hover effect with other buttons */
+}
+
 /* Image Gallery - Pinterest Style */
 .image-gallery {
     display: grid;
@@ -84,13 +96,15 @@ nav {
 
 .left-nav li a {
     color: white;
+    align-items: center;
     text-decoration: none;
     font-size: 1rem;
+    justify-content: space-between;
 }
 
 .search-form {
     position: absolute;  /* Position the search form in the center */
-    left: 30%;
+    left: 50%;
     transform: translateX(-40%);  /* Center it horizontally */
 }
 
